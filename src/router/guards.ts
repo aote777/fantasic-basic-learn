@@ -5,7 +5,7 @@ import useRouteStore from '@/store/modules/route'
 import useSettingsStore from '@/store/modules/settings'
 import useUserStore from '@/store/modules/user'
 import { useNProgress } from '@vueuse/integrations/useNProgress'
-import { asyncRoutes, asyncRoutesByFilesystem } from './routes'
+import { asyncRoutes } from './routes'
 import '@/assets/styles/nprogress.css'
 
 function setupRoutes(router: Router) {
@@ -49,6 +49,7 @@ function setupRoutes(router: Router) {
         // 获取用户权限
         settingsStore.settings.app.enablePermission && await userStore.getPermissions()
         // 生成动态路由
+        // 此处加入 业务路由表
         switch (settingsStore.settings.app.routeBaseOn) {
           case 'frontend':
             routeStore.generateRoutesAtFront(asyncRoutes)
@@ -56,22 +57,23 @@ function setupRoutes(router: Router) {
           case 'backend':
             await routeStore.generateRoutesAtBack()
             break
-          case 'filesystem':
-            routeStore.generateRoutesAtFilesystem(asyncRoutesByFilesystem)
-            // 文件系统生成的路由，需要手动生成导航数据
-            switch (settingsStore.settings.menu.baseOn) {
-              case 'frontend':
-                menuStore.generateMenusAtFront()
-                break
-              case 'backend':
-                await menuStore.generateMenusAtBack()
-                break
-            }
-            break
+          // case 'filesystem':
+          //   routeStore.generateRoutesAtFilesystem(asyncRoutesByFilesystem)
+          //   // 文件系统生成的路由，需要手动生成导航数据
+          //   switch (settingsStore.settings.menu.baseOn) {
+          //     case 'frontend':
+          //       menuStore.generateMenusAtFront()
+          //       break
+          //     case 'backend':
+          //       await menuStore.generateMenusAtBack()
+          //       break
+          //   }
+          //   break
         }
         // 注册并记录路由数据
         // 记录的数据会在登出时会使用到，不使用 router.removeRoute 是考虑配置的路由可能不一定有设置 name ，则通过调用 router.addRoute() 返回的回调进行删除
         const removeRoutes: (() => void)[] = []
+        // 路由扁平化
         routeStore.flatRoutes.forEach((route) => {
           if (!/^(?:https?:|mailto:|tel:)/.test(route.path)) {
             removeRoutes.push(router.addRoute(route as RouteRecordRaw))
@@ -107,6 +109,7 @@ function setupRoutes(router: Router) {
   })
 }
 
+// TODO 把这个加进去
 // 进度条
 function setupProgress(router: Router) {
   const { isLoading } = useNProgress()

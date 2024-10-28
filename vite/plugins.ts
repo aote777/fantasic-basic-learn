@@ -20,6 +20,7 @@ import { createSvgIconsPlugin } from 'vite-plugin-svg-icons'
 import VueDevTools from 'vite-plugin-vue-devtools'
 import Layouts from 'vite-plugin-vue-meta-layouts'
 
+// TODO 换成这种 配置方式 独立插件
 export default function createVitePlugins(mode: string, isBuild = false) {
   const viteEnv = loadEnv(mode, process.cwd())
   const vitePlugins: (PluginOption | PluginOption[])[] = [
